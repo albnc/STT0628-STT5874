@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+  <html lang="pt-BR">
+    <head>
+    <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Engenharia de Tráfego e Simulação - Aula 1</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <style>
+            :root {
+              --primary: #2c3e50;
+                --secondary: #e74c3c;
+                --accent: #3498db;
+                --light: #ecf0f1;
+                --dark: #2c3e50;
+                --success: #2ecc71;
+            }
+          
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          }
+          
+          body {
+            background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);
+                                        color: #333;
+                                          min-height: 100vh;
+                                        display: flex;
+                                        justify-content: center;
+                                        align-items: center;
+                                        padding: 20px;
+          }
+          
+          .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 1200px;
+            overflow: hidden;
+            position: relative;
+          }
+          
+          header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+          }
+          
+          h1 { font-size: 2.2rem; margin-bottom: 10px; }
+          .subtitle { font-size: 1.2rem; opacity: 0.9; }
+          
+          /* 1) ALTURA DOS SLIDES AUMENTADA (antes: 600px) */
+              .slides-container {
+                position: relative;
+                height: 80vh;                /* altura responsiva */
+                  min-height: 640px;           /* garante bom espaço em telas baixas */
+                  overflow: hidden;
+              }
+            
+            .slides {
+              display: flex;
+              transition: transform 0.5s ease;
+              height: 100%;
+            }
+            
+            .slide {
+              min-width: 100%;
+              padding: 30px;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              text-align: center;
+            }
+            
+            .slide-content {
+              max-width: 900px;
+              width: 100%;
+            }
+            
+            .slide-title {
+              color: var(--primary);
+              font-size: 2rem;
+              margin-bottom: 20px;
+              padding-bottom: 10px;
+              border-bottom: 2px solid var(--accent);
+            }
+            
+            .question-slide .slide-title {
+              font-size: 2.5rem;
+              color: var(--secondary);
+              border-bottom: none;
+            }
+            
+            .slide-body { font-size: 1.2rem; line-height: 1.6; margin-bottom: 25px; }
+            
+            .btn {
+              background: var(--accent);
+              color: white;
+              border: none;
+              padding: 12px 25px;
+              border-radius: 30px;
+              cursor: pointer;
+              font-size: 1rem;
+              font-weight: 600;
+              transition: all 0.3s;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .btn:hover { background: var(--primary); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+            .btn i { margin-right: 8px; }
+            
+            .controls {
+              display: flex;
+              justify-content: space-between;
+              padding: 20px;
+              background: var(--light);
+            }
+            
+            .navigation { display: flex; gap: 10px; }
+            
+            .nav-btn {
+              background: var(--primary);
+              color: white;
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              transition: all 0.3s;
+            }
+            .nav-btn:hover { background: var(--accent); transform: scale(1.1); }
+            
+            .progress-bar {
+              flex-grow: 1;
+              max-width: 400px;
+              height: 8px;
+              background: #ddd;
+                border-radius: 4px;
+              overflow: hidden;
+              margin: 0 20px;
+              align-self: center;
+            }
+            .progress { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s; }
+            
+            .slide-indicators { display: flex; gap: 8px; }
+            .indicator { width: 12px; height: 12px; border-radius: 50%; background: #ccc; cursor: pointer; transition: all 0.3s; }
+                .indicator.active { background: var(--accent); transform: scale(1.2); }
+              
+              .examples-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; margin: 20px 0; }
+              .example-card { background: var(--light); padding: 20px; border-radius: 10px; text-align: left; }
+              .example-card h3 { color: var(--primary); margin-bottom: 10px; }
+              
+              .model-types { display: flex; justify-content: space-around; margin: 30px 0; flex-wrap: wrap; gap: 15px; }
+              .model-type { background: var(--light); padding: 20px; border-radius: 10px; width: 200px; text-align: center; }
+              .model-type i { font-size: 2.5rem; color: var(--accent); margin-bottom: 15px; }
+              
+              .software-logos { display: flex; justify-content: center; gap: 30px; margin: 30px 0; flex-wrap: wrap; }
+              .software-logo {
+                width: 80px; height: 80px; background: var(--light); border-radius: 15px;
+                display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--primary);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+              }
+              .software-link { color: var(--accent); text-decoration: none; transition: color 0.3s; }
+              .software-link:hover { color: var(--primary); text-decoration: underline; }
+              
+              .chart-container { width: 100%; max-width: 700px; margin: 20px auto; }
+              .chart-row { display: flex; justify-content: space-between; gap: 20px; margin: 20px 0; }
+              .chart-column { flex: 1; min-width: 300px; }
+              
+              .simulation-controls { display: flex; gap: 15px; justify-content: center; margin: 20px 0; }
+              .formula { background: #f8f9fa; padding: 15px; border-radius: 10px; font-family: 'Courier New', monospace; margin: 15px 0; text-align: center; font-size: 1.2rem; }
+                  
+                  footer { text-align: center; padding: 15px; background: var(--dark); color: white; font-size: 0.9rem; }
+                
+                .question-icon { font-size: 4rem; color: var(--secondary); margin: 30px 0; }
+                .image-slide { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+                
+                .image-container { width: 100%; max-width: 600px; margin: 20px 0; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+                .image-container img { width: 100%; height: auto; display: block; }
+                .image-caption { font-style: italic; margin-top: 10px; color: #666; }
+                    
+                    .comparison-container { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 20px; }
+                  .comparison-item { flex: 1; min-width: 300px; text-align: center; }
+                  
+                  .flowchart { display: flex; justify-content: center; align-items: center; margin: 30px 0; }
+                  .flowchart-step { padding: 15px; background: var(--light); border-radius: 10px; margin: 0 10px; min-width: 100px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+                  .flowchart-arrow { font-size: 2rem; color: var(--accent); }
+                  
+                  .cover-slide { background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: white; text-align: center; }
+                  .cover-content {
+                    max-width: 800px; padding: 40px; background: rgba(255,255,255,0.9); border-radius: 15px; color: var(--primary);
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                  }
+                  .cover-title { font-size: 2.5rem; margin-bottom: 20px; color: var(--primary); }
+                  .professor-info { margin: 30px 0; padding: 20px; background: var(--primary); color: white; border-radius: 10px; }
+                  .disciplines { display: flex; justify-content: center; gap: 20px; margin: 20px 0; }
+                  .discipline-card { background: var(--accent); color: white; padding: 15px; border-radius: 10px; font-weight: bold; }
+                  
+                  /* 2) ÍCONE DA CAPA RELACIONADO A TRÁFEGO */
+  .institution-logo {
+    font-size: 4rem;
+    color: var(--accent);
+    margin-bottom: 20px;
+    background: var(--primary);
+    width: 100px; height: 100px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+  }
+
+.space-for-image {
+  min-height: 300px; background-color: #f5f5f5; border: 2px dashed #ccc; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; margin: 20px 0; color: #666;
+}
+
+/* 3) DUAS COLUNAS PARA OS SOFTWARES (SLIDE 14) */
+  .software-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 15px;
+    width: 100%;
+    max-width: 900px;
+  }
+.software-columns h4 {
+  margin-bottom: 8px;
+  color: var(--primary);
+}
+.software-columns ul {
+  text-align: left; margin: 0; padding-left: 18px;
+}
+
+@media (max-width: 768px) {
+  .slides-container { height: 75vh; min-height: 560px; } /* ainda alto no mobile */
+    .examples-grid { grid-template-columns: 1fr; }
+  .model-types { flex-direction: column; align-items: center; }
+  .software-logos { gap: 15px; }
+  .software-logo { width: 60px; height: 60px; font-size: 0.8rem; }
+  .question-slide .slide-title { font-size: 2rem; }
+  .comparison-container { flex-direction: column; }
+  .flowchart { flex-direction: column; }
+  .flowchart-arrow { transform: rotate(90deg); margin: 10px 0; }
+  .chart-row { flex-direction: column; }
+  .disciplines { flex-direction: column; }
+  .software-columns { grid-template-columns: 1fr; }
+}
+</style>
+  </head>
+  <body>
+  <div class="container">
+  <div class="slides-container">
+  <div class="slides">
+  <!-- Slide 1: Capa -->
+  <div class="slide cover-slide">
+  <div class="cover-content">
+  <div class="institution-logo">
+  <i class="fas fa-car"></i>
+  </div>
+  <h1 class="cover-title">Engenharia de Tráfego e Simulação</h1>
+  <div class="professor-info">
+  <h2>Prof. André Luiz Cunha</h2>
+  <p>USP-EESC</p>
+  </div>
+  <div class="disciplines">
+  <div class="discipline-card">STT5874</div>
+  <div class="discipline-card">STT0628</div>
+  </div>
+  <p>Aula 1: Introdução à Modelagem e Simulação</p>
+  </div>
+  </div>
+  
+  <!-- Slide 2: Introdução -->
+  <div class="slide question-slide">
+  <div class="slide-content">
+  <div class="question-icon">
+  <i class="fas fa-question-circle"></i>
+  </div>
+  <h2 class="slide-title">O que é Simulação?</h2>
+  <p class="slide-body">Pense em exemplos do seu dia a dia...</p>
+  </div>
+  </div>
+  
+  <!-- Slide 3 -->
+  <div class="slide">
+  <div class="slide-content">
+  <h2 class="slide-title">O que é Simulação?</h2>
+  <div class="slide-body">
+  <p>Simulação é a imitação do funcionamento de um processo ou sistema real ao longo do tempo.</p>
+  <div class="examples-grid">
+  <div class="example-card">
+  <h3><i class="fas fa-gamepad"></i> Jogos</h3>
+  <p>The Sims, SimCity, Cities: Skylines</p>
+  </div>
+  <div class="example-card">
+  <h3><i class="fas fa-plane"></i> Simuladores</h3>
+  <p>Treinamento de pilotos, controladores de tráfego</p>
+  </div>
+  <div class="example-card">
+  <h3><i class="fas fa-car"></i> Tráfego</h3>
+  <p>Simulação de fluxo veicular, planejamento urbano</p>
+  </div>
+  <div class="example-card">
+  <h3><i class="fas fa-virus"></i> Epidemiologia</h3>
+  <p>Simulação de propagação de doenças</p>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  
+  <!-- Slide 4 -->
+  <div class="slide question-slide">
+  <div class="slide-content">
+  <div class="question-icon"><i class="fas fa-question-circle"></i></div>
+  <h2 class="slide-title">Modelo vs. Simulação</h2>
+  <p class="slide-body">Qual a diferença entre esses conceitos?</p>
+  </div>
+  </div>
+  
+  <!-- Slide 5 -->
+  <div class="slide">
+  <div class="slide-content">
+  <h2 class="slide-title">Modelo vs. Simulação</h2>
+  <div class="slide-body">
+  <p>Um <strong>modelo</strong> é uma representação simplificada da realidade,<br>enquanto uma <strong>simulação</strong> é a execução desse modelo ao longo do tempo.</p>
+  <div class="model-types">
+  <div class="model-type">
+  <i class="fas fa-building"></i>
+  <h3>Modelo Físico</h3><p>Maquetes, protótipos</p>
+  </div>
+  <div class="model-type">
+  <i class="fas fa-drafting-compass"></i>
+  <h3>Modelo Representacional</h3><p>Croquis, diagramas</p>
+  </div>
+  <div class="model-type">
+  <i class="fas fa-cogs"></i>
+  <h3>Modelo Funcional</h3><p>Diagramas de fluxo, equações</p>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  
+  <!-- Slide 6 -->
+  <div class="slide image-slide">
+  <div class="slide-content">
+  <h2 class="slide-title">Modelo???</h2>
+  <div class="slide-body">
+  <p>Modelos físicos são representações tangíveis de sistemas reais?</p>
+  <div class="space-for-image"><img src="_imgs/models.png" alt="Models" style="width:90%;"></div>
+<!--  <div class="space-for-image"><p>Espaço para imagem de modelos de passarela</p></div>
+  <p>Estes modelos permitem identificar problemas antes da construção em escala real, mas não representam todos os aspectos do sistema (como usuários ou condições ambientais variáveis).</p>-->
+  </div>
+  </div>
+  </div>
+  
+  <!-- Slide 7 -->
+  <div class="slide image-slide">
+  <div class="slide-content">
+  <h2 class="slide-title">Cena Real</h2>
+  <div class="slide-body">
+  <p>Cena real para representação através de modelo.</p>
+  <div class="space-for-image"><img src="_imgs/couple-real.png" alt="Real" style="width:40%;"></div>
+  </div>
+  </div>
+  </div>
+  
+  <!-- Slide 8 -->
+  <div class="slide image-slide">
+  <div class="slide-content">
+  <h2 class="slide-title">Modelo Representacional: Croqui</h2>
+  <div class="slide-body">
+  <p>Modelos representacionais capturam aspectos essenciais de uma cena ou sistema, ignorando detalhes irrelevantes (ERRO!).</p>
+  <div class="comparison-container">
+  <div class="comparison-item">
+  <div class="image-container">
+  <div class="space-for-image"><img src="_imgs/couple-real.png" alt="Real" style="width:90%;"></div>
+  <div class="image-caption">Cena real</div>
+  </div>
+  </div>
+  <div class="comparison-item">
+  <div class="image-container">
+  <div class="space-for-image"><img src="_imgs/couple-model.png" alt="Model" style="width:90%;"></div>
+  <div class="image-caption">Croqui simplificado da mesma cena</div>
+  </div>
+  </div>
+  </div>
+  <p>O croqui destaca apenas os elementos relevantes para a análise, simplificando a complexidade da cena real.</p>
+  </div>
+  </div>
+  </div>
+  
+  <!-- Slide 9 -->
+  <div class="slide image-slide">
+  <div class="slide-content">
+  <h2 class="slide-title">Modelo de Fenômeno: Motor</h2>
+  <div class="slide-body">
+  <p>Sistema complexo para representação através de modelo funcional.</p>
+  <div class="space-for-image"><img src="_imgs/motor.png" alt="Motor" style="width:50%;"></div>
+  </div>
+  </div>
+  </div>
+  
+  <!-- Slide 10 -->
+  <div class="slide image-slide">
+  <div class="slide-content">
+  <h2 class="slide-title">Modelo Funcional: Motor Veicular</h2>
+  <div class="slide-body">
+  <p>Modelos funcionais representam como um sistema opera, focando nas entradas, processos e saídas.</p>
+  <div class="image-container">
+  <div class="space-for-image"><img src="_imgs/motor.png" alt="Motor" style="width:50%;"></div>
+  <div class="image-caption">Motor de veículo - sistema complexo</div>
+  </div>
+  <div class="flowchart">
+  <div class="flowchart-step"><h4>Bateria</h4><p>Fornece energia elétrica</p></div>
+  <div class="flowchart-arrow">+</div>
+  <div class="flowchart-step"><h4>Combustível</h4><p>Fornece energia química</p></div>
+  <div class="flowchart-arrow">→</div>
+  <div class="flowchart-step"><h4>Motor</h4><p>Conversão em movimento</p></div>
+  <div class="flowchart-arrow">→</div>
+  <div class="flowchart-step"><h4>Funcionamento</h4><p>Veículo em operação</p></div>
+  </div>
+  <p>Este modelo funcional simplifica o motor a suas entradas e saídas essenciais, ignorando detalhes complexos de funcionamento interno.</p>
+  </div>
+  </div>
+  </div>
+  
+  <!-- Slide 11 -->
+  <div class="slide question-slide">
+  <div class="slide-content">
+  <div class="question-icon"><i class="fas fa-question-circle"></i></div>
+  <h2 class="slide-title">Método de Monte Carlo</h2>
+  <p class="slide-body">Como podemos usar aleatoriedade para resolver problemas?</p>
+  </div>
+  </div>
+  
+  <!-- Slide 12 -->
+  <div class="slide">
+  <div class="slide-content">
+  <h2 class="slide-title">Método de Monte Carlo</h2>
+  <div class="slide-body">
+  <p>Técnica estatística que utiliza amostragem aleatória para obter resultados numéricos.</p>
+  <div class="formula">π ≈ 4 × (pontos dentro do círculo / total de pontos)</div>
+  <div class="chart-container"><canvas id="monteCarloChart"></canvas></div>
+  <button class="btn" onclick="runMonteCarlo()"><i class="fas fa-play"></i> Executar Simulação</button>
+  </div>
+  </div>
+  </div>
+  
+  <!-- Slide 13 -->
+  <div class="slide question-slide">
+  <div class="slide-content">
+  <div class="question-icon"><i class="fas fa-question-circle"></i></div>
+  <h2 class="slide-title">Modelos de Simulação de Tráfego</h2>
+  <p class="slide-body">Quais abordagens podemos usar para simular tráfego?</p>
+  </div>
+  </div>
+  
+  <!-- Slide 14 (ATUALIZADO: duas colunas) -->
+  <div class="slide">
+  <div class="slide-content">
+  <h2 class="slide-title">Modelos de Simulação de Tráfego</h2>
+  <div class="slide-body">
+  <div class="model-types">
+  <div class="model-type">
+  <i class="fas fa-road"></i>
+  <h3>Macroscópico</h3><p>Fluxo como um todo</p>
+  </div>
+  <div class="model-type">
+  <i class="fas fa-users"></i>
+  <h3>Mesoscópico</h3><p>Grupos de veículos</p>
+  </div>
+  <div class="model-type">
+  <i class="fas fa-car"></i>
+  <h3>Microscópico</h3><p>Veículos individuais</p>
+  </div>
+  <div class="model-type">
+  <i class="fas fa-robot"></i>
+  <h3>Baseado em Agentes</h3><p>Comportamentos individuais</p>
+  </div>
+  </div>
+  
+  <div class="software-list">
+  <h3>Softwares de Simulação</h3>
+  
+  <!-- 3) DUAS COLUNAS -->
+  <div class="software-columns">
+    <div>
+    <h4>[Micro-Meso-Macro]scópicos</h4>
+    <ul>
+    <li><a href="https://mctrans.ce.ufl.edu/tsis-corsim/" class="software-link" target="_blank">TSIS-CORSIM</a></li>
+      <li><a href="https://www.ptvgroup.com/pt-br/produtos/ptv-vissim" class="software-link" target="_blank">VISSIM</a></li>
+        <li><a href="https://www.aimsun.com/" class="software-link" target="_blank">AIMSUN</a></li>
+          <li><a href="https://eclipse.dev/sumo/" class="software-link" target="_blank">SUMO</a></li>
+            </ul>
+            </div>
+            <div>
+            <h4>Agent-based</h4>
+            <ul>
+            <li><a href="https://matsim.org/" class="software-link" target="_blank">MATSIM</a></li>
+              <li><a href="https://ccl.northwestern.edu/netlogo/" class="software-link" target="_blank">NETLOGO</a></li>
+                <li><a href="https://www.anylogic.com/" class="software-link" target="_blank">AnyLogic</a></li>
+                  </ul>
+                  </div>
+                  </div>
+                  <!-- fim duas colunas -->
+                  </div>
+                  </div>
+                  </div>
+                  </div>
+                  
+                  <!-- Slide 15 -->
+                  <div class="slide question-slide">
+                    <div class="slide-content">
+                      <div class="question-icon"><i class="fas fa-question-circle"></i></div>
+                        <h2 class="slide-title">Distribuições Estatísticas</h2>
+                          <p class="slide-body">Como modelar a aleatoriedade em simulações?</p>
+                            </div>
+                            </div>
+                            
+                            <!-- Slide 16 -->
+                            <div class="slide">
+                              <div class="slide-content">
+                                <h2 class="slide-title">Distribuições Estatísticas</h2>
+                                  <div class="slide-body">
+                                    <p>Funções de distribuição são fundamentais para modelagem estocástica em simulações.</p>
+                                    <div class="chart-row">
+                                      <div class="chart-column"><div class="chart-container"><canvas id="distributionChart"></canvas></div></div>
+                                        <div class="chart-column"><div class="chart-container"><canvas id="histogramChart"></canvas></div></div>
+                                          </div>
+                                          <div class="simulation-controls">
+                                            <button class="btn" onclick="changeDistribution('normal')">Normal</button>
+                                              <button class="btn" onclick="changeDistribution('exponential')">Exponencial</button>
+                                                <button class="btn" onclick="changeDistribution('uniform')">Uniforme</button>
+                                                  </div>
+                                                  </div>
+                                                  </div>
+                                                  </div>
+                                                  
+                                                  <!-- Slide 17 -->
+                                                  <div class="slide question-slide">
+                                                    <div class="slide-content">
+                                                      <div class="question-icon"><i class="fas fa-question-circle"></i></div>
+                                                        <h2 class="slide-title">Laboratório 1: Balança de Caminhões</h2>
+                                                          <p class="slide-body">Como simular um sistema de filas com diferentes características?</p>
+                                                            </div>
+                                                            </div>
+                                                            
+                                                            <!-- Slide 18 -->
+                                                            <div class="slide">
+                                                              <div class="slide-content">
+                                                                <h2 class="slide-title">Laboratório 1: Balança de Caminhões</h2>
+                                                                  <div class="slide-body">
+                                                                    <p>Simulação de pesagem de caminhões com diferentes taxas de chegada e probabilidade de sobrecarga.</p>
+                                                                    <div class="formula">Modelos de fila: M/D/1 e M/M/1</div>
+                                                                      <div class="chart-container"><canvas id="queueChart"></canvas></div>
+                                                                        <div class="simulation-controls">
+                                                                          <button class="btn" onclick="runSimulation('MD1')">Executar M/D/1</button>
+                                                                            <button class="btn" onclick="runSimulation('MM1')">Executar M/M/1</button>
+                                                                              </div>
+                                                                              </div>
+                                                                              </div>
+                                                                              </div>
+                                                                              
+                                                                              <!-- Slide 19 -->
+                                                                              <div class="slide">
+                                                                                <div class="slide-content">
+                                                                                  <h2 class="slide-title">Próximos Passos</h2>
+                                                                                    <div class="slide-body">
+                                                                                      <p>Na próxima aula, aprofundaremos nos modelos microscópicos de simulação de tráfego.</p>
+                                                                                      <div class="professor-info">
+                                                                                        <h3>Laboratório Prático</h3>
+                                                                                        <p>Realizar o laboratório disponível no Google Classroom</p>
+                                                                                        <p>Instruções detalhadas e materiais de apoio disponíveis</p>
+                                                                                        </div>
+                                                                                        </div>
+                                                                                        </div>
+                                                                                        </div>
+                                                                                        
+                                                                                        </div>
+                                                                                        </div>
+                                                                                        
+                                                                                        <div class="controls">
+                                                                                          <div class="navigation">
+                                                                                            <div class="nav-btn" onclick="prevSlide()"><i class="fas fa-arrow-left"></i></div>
+                                                                                              <div class="nav-btn" onclick="nextSlide()"><i class="fas fa-arrow-right"></i></div>
+                                                                                                </div>
+                                                                                                <div class="progress-bar"><div class="progress" id="progress"></div></div>
+                                                                                                  <div class="slide-indicators" id="indicators"></div>
+                                                                                                    </div>
+                                                                                                    
+                                                                                                    <footer>
+                                                                                                    <p>Engenharia de Tráfego e Simulação - USP-EESC • STT5874 & STT0628</p>
+                                                                                                    </footer>
+                                                                                                    </div>
+                                                                                                    
+                                                                                                    <script>
+                                                                                                    // Configuração dos slides
+                                                                                                  const totalSlides = document.querySelectorAll('.slide').length;
+                                                                                                  let currentSlide = 0;
+                                                                                                  
+                                                                                                  // Inicializar indicadores
+                                                                                                  const indicatorsContainer = document.getElementById('indicators');
+                                                                                                  for (let i = 0; i < totalSlides; i++) {
+                                                                                                    const indicator = document.createElement('div');
+                                                                                                    indicator.classList.add('indicator');
+                                                                                                    if (i === 0) indicator.classList.add('active');
+                                                                                                    indicator.addEventListener('click', () => goToSlide(i));
+                                                                                                    indicatorsContainer.appendChild(indicator);
+                                                                                                  }
+                                                                                                  
+                                                                                                  function updateProgress() {
+                                                                                                    const progress = document.getElementById('progress');
+                                                                                                    progress.style.width = `${(currentSlide + 1) / totalSlides * 100}%`;
+                                                                                                    document.querySelectorAll('.indicator').forEach((ind, index) => {
+                                                                                                      ind.classList.toggle('active', index === currentSlide);
+                                                                                                    });
+                                                                                                  }
+                                                                                                  
+                                                                                                  function goToSlide(n) {
+                                                                                                    currentSlide = n;
+                                                                                                    const slides = document.querySelector('.slides');
+                                                                                                    slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+                                                                                                    updateProgress();
+                                                                                                  }
+                                                                                                  function nextSlide() { if (currentSlide < totalSlides - 1) goToSlide(currentSlide + 1); }
+                                                                                                  function prevSlide() { if (currentSlide > 0) goToSlide(currentSlide - 1); }
+                                                                                                  function firstSlide() { goToSlide(0); }
+                                                                                                  
+                                                                                                  // Gráficos
+                                                                                                  let monteCarloChart, distributionChart, histogramChart, queueChart;
+                                                                                                  
+                                                                                                  window.onload = function() {
+                                                                                                    const monteCarloCtx = document.getElementById('monteCarloChart').getContext('2d');
+                                                                                                    monteCarloChart = new Chart(monteCarloCtx, {
+                                                                                                      type: 'scatter',
+                                                                                                      data: { datasets: [
+                                                                                                        { label: 'Pontos dentro do círculo', backgroundColor: 'rgba(46, 204, 113, 0.7)', data: [] },
+                                                                                                        { label: 'Pontos fora do círculo', backgroundColor: 'rgba(231, 76, 60, 0.7)', data: [] }
+                                                                                                      ]},
+                                                                                                      options: {
+                                                                                                        responsive: true,
+                                                                                                        maintainAspectRatio: true,
+                                                                                                        scales: {
+                                                                                                          x: { min: 0, max: 1, title: { display: true, text: 'X' } },
+                                                                                                          y: { min: 0, max: 1, title: { display: true, text: 'Y' } }
+                                                                                                        },
+                                                                                                        plugins: { title: { display: true, text: 'Estimação de π pelo Método de Monte Carlo' } }
+                                                                                                      }
+                                                                                                    });
+                                                                                                    
+                                                                                                    const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+                                                                                                    distributionChart = new Chart(distributionCtx, {
+                                                                                                      type: 'line',
+                                                                                                      data: { labels: Array.from({length: 100}, (_, i) => i),
+                                                                                                        datasets: [{ label: 'Distribuição', backgroundColor: 'rgba(52,152,219,0.2)', borderColor: 'rgba(52,152,219,1)', data: [], fill: true, tension: 0.4 }]
+                                                                                                      },
+                                                                                                      options: { responsive: true, maintainAspectRatio: true, plugins: { title: { display: true, text: 'Distribuição Normal' } } }
+                                                                                                    });
+                                                                                                    
+                                                                                                    const histogramCtx = document.getElementById('histogramChart').getContext('2d');
+                                                                                                    histogramChart = new Chart(histogramCtx, {
+                                                                                                      type: 'bar',
+                                                                                                      data: { labels: [], datasets: [{ label: 'Frequência', backgroundColor: 'rgba(231,76,60,0.7)', data: [], borderColor: 'rgba(231,76,60,1)', borderWidth: 1 }] },
+                                                                                                      options: {
+                                                                                                        responsive: true, maintainAspectRatio: true,
+                                                                                                        plugins: { title: { display: true, text: 'Histograma da Distribuição' } },
+                                                                                                        scales: {
+                                                                                                          y: { beginAtZero: true, title: { display: true, text: 'Frequência' } },
+                                                                                                          x: { title: { display: true, text: 'Valores' } }
+                                                                                                        }
+                                                                                                      }
+                                                                                                    });
+                                                                                                    
+                                                                                                    const queueCtx = document.getElementById('queueChart').getContext('2d');
+                                                                                                    queueChart = new Chart(queueCtx, {
+                                                                                                      type: 'bar',
+                                                                                                      data: {
+                                                                                                        labels: ['Tempo médio de espera', 'Tamanho médio da fila', 'Utilização do sistema'],
+                                                                                                        datasets: [
+                                                                                                          { label: 'M/D/1', backgroundColor: 'rgba(52,152,219,0.7)', data: [0,0,0] },
+                                                                                                          { label: 'M/M/1', backgroundColor: 'rgba(46,204,113,0.7)', data: [0,0,0] }
+                                                                                                        ]
+                                                                                                      },
+                                                                                                      options: { responsive: true, plugins: { title: { display: true, text: 'Comparação entre Modelos de Fila' } } }
+                                                                                                    });
+                                                                                                    
+                                                                                                    changeDistribution('normal');
+                                                                                                  };
+                                                                                                  
+                                                                                                  function runMonteCarlo() {
+                                                                                                    const n = 500;
+                                                                                                    let inside = 0;
+                                                                                                    const insidePoints = [], outsidePoints = [];
+                                                                                                    for (let i = 0; i < n; i++) {
+                                                                                                      const x = Math.random(), y = Math.random();
+                                                                                                      const distance = Math.sqrt(x*x + y*y);
+                                                                                                      if (distance <= 1) { inside++; insidePoints.push({x,y}); }
+                                                                                                      else { outsidePoints.push({x,y}); }
+                                                                                                    }
+                                                                                                    const pi = 4 * inside / n;
+                                                                                                    monteCarloChart.data.datasets[0].data = insidePoints;
+                                                                                                    monteCarloChart.data.datasets[1].data = outsidePoints;
+                                                                                                    monteCarloChart.options.plugins.title.text = `Estimação de π: ${pi.toFixed(4)} (${n} pontos)`;
+                                                                                                    monteCarloChart.update();
+                                                                                                  }
+                                                                                                  
+                                                                                                  function changeDistribution(type) {
+                                                                                                    let data = [], title = '';
+                                                                                                    if (type === 'normal') {
+                                                                                                      title = 'Distribuição Normal';
+                                                                                                      for (let i = 0; i < 1000; i++) {
+                                                                                                        let sum = 0; for (let j = 0; j < 12; j++) sum += Math.random();
+                                                                                                        data.push(sum - 6);
+                                                                                                      }
+                                                                                                    } else if (type === 'exponential') {
+                                                                                                      title = 'Distribuição Exponencial'; const lambda = 0.5;
+                                                                                                      for (let i = 0; i < 1000; i++) data.push(-Math.log(1 - Math.random()) / lambda);
+                                                                                                    } else if (type === 'uniform') {
+                                                                                                      title = 'Distribuição Uniforme';
+                                                                                                      for (let i = 0; i < 1000; i++) data.push(Math.random());
+                                                                                                    }
+                                                                                                    distributionChart.data.datasets[0].data = data.slice(0, 100);
+                                                                                                    distributionChart.options.plugins.title.text = title;
+                                                                                                    distributionChart.update();
+                                                                                                    updateHistogram(data, type);
+                                                                                                  }
+                                                                                                  
+                                                                                                  function updateHistogram(data, type) {
+                                                                                                    const n = data.length;
+                                                                                                    const numBins = Math.ceil(Math.log2(n)) + 1;
+                                                                                                    const minVal = Math.min(...data), maxVal = Math.max(...data);
+                                                                                                    const range = maxVal - minVal, binWidth = range / numBins;
+                                                                                                    const bins = Array(numBins).fill(0), binLabels = [];
+                                                                                                    for (let i = 0; i < numBins; i++) {
+                                                                                                      const binStart = minVal + i * binWidth, binEnd = binStart + binWidth;
+                                                                                                      binLabels.push(`${binStart.toFixed(2)} - ${binEnd.toFixed(2)}`);
+                                                                                                    }
+                                                                                                    data.forEach(value => {
+                                                                                                      let binIndex = Math.floor((value - minVal) / binWidth);
+                                                                                                      if (binIndex === numBins) binIndex = numBins - 1;
+                                                                                                      bins[binIndex]++;
+                                                                                                    });
+                                                                                                    histogramChart.data.labels = binLabels;
+                                                                                                    histogramChart.data.datasets[0].data = bins;
+                                                                                                    histogramChart.options.plugins.title.text = `Histograma - ${type}`;
+                                                                                                    histogramChart.update();
+                                                                                                  }
+                                                                                                  
+                                                                                                  function runSimulation(type) {
+                                                                                                    let waitTime, queueLength, utilization;
+                                                                                                    if (type === 'MD1') { waitTime = 2.5; queueLength = 3.2; utilization = 0.7; }
+                                                                                                    else { waitTime = 3.8; queueLength = 4.5; utilization = 0.75; }
+                                                                                                    if (type === 'MD1') queueChart.data.datasets[0].data = [waitTime, queueLength, utilization];
+                                                                                                    else queueChart.data.datasets[1].data = [waitTime, queueLength, utilization];
+                                                                                                    queueChart.update();
+                                                                                                  }
+                                                                                                  
+                                                                                                  document.addEventListener('keydown', (e) => {
+                                                                                                    if (e.key === 'ArrowRight') nextSlide();
+                                                                                                    if (e.key === 'ArrowLeft') prevSlide();
+                                                                                                  });
+                                                                                                  
+                                                                                                  updateProgress();
+                                                                                                  </script>
+                                                                                                    </body>
+                                                                                                    </html>
+                                                                                                    
